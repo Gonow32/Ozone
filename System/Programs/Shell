@@ -14,5 +14,5 @@ function os.reboot()
 	oldReboot()
 end
 
-dofile("/rom/programs/shell")
+dofile("/rom/programs/shell.lua")
 settings.set("shell.allow_startup", true)
