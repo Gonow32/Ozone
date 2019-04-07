@@ -104,7 +104,7 @@ local errors = false
 for i, v in pairs(fileTable) do
 	RenderMain()
 	term.setCursorPos(2, 3)
-	term.write("Downloading "..v.." ("..tostring(i).."/"..tostring(#fileTable))
+	term.write("Downloading "..v.." ("..tostring(i).."/"..tostring(#fileTable)..")")
 	local handle = http.get(BaseURL..v)
 	if handle then
 		local data = handle.readAll()
