@@ -113,16 +113,17 @@ function LoadProgram(fullPath)
   end
   
   local programFunction = function()
-  	if shellMode == false then
+  	if barEnabled == true then
   		term.redirect(MainWindow)
 	else
 		term.redirect(term.current())
 	end
+	term.setCursorPos(1, 1)
 	loadfile(fullPath)() 
   end
   
   MainProgramProcessID = System.StartProcess(function() 
-  	if shellMode == false then
+  	if barEnabled == true then
   		term.redirect(MainWindow)
 	else
 		term.redirect(term.current())
