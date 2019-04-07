@@ -6,4 +6,5 @@
   SystemDevelopmentBuild = 8,
   SystemDevelopmentMilestone = 3,
   StartInShell = false,
+  SystemBarEnabled = true,
 }
