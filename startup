@@ -24,7 +24,7 @@ shell.setPath(shell.path()..":/System/ShellTools")
 
 if System or Registry then
   term.setTextColour(colours.yellow)
-  if Registry.GetValue("SystemValues", "StartInShell") == true then
+  if Registry.GetValue("SystemValues", "StartInShell") == false then
     print("Type 'exit' to return to Workspace.")
   end
   return
