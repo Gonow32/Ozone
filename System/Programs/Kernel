@@ -116,12 +116,19 @@ function LoadProgram(fullPath)
   	if shellMode == false then
   		term.redirect(MainWindow)
 	else
-		term.redirect(term.native())
+		term.redirect(term.current())
 	end
 	loadfile(fullPath)() 
   end
   
-  MainProgramProcessID = System.StartProcess(function() term.redirect(MainWindow) programFunction() end, fullPath)
+  MainProgramProcessID = System.StartProcess(function() 
+  	if shellMode == false then
+  		term.redirect(MainWindow)
+	else
+		term.redirect(term.current())
+	end
+	programFunction() 
+  end, fullPath)
   
   --local programEnv = {}
   --setmetatable(programEnv, {__index = _G})
