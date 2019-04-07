@@ -69,7 +69,7 @@ function renderProgram()
   term.setTextColour(colours.grey)
   term.setCursorPos(1, 2)
   term.clearLine()
-  term.setCursorPos(1, 1)
+  term.setCursorPos(1, 2)
   
   for i, v in pairs(barItems) do
     term.write(" "..v.sText)
@@ -80,9 +80,9 @@ function renderProgram()
   local counter = 1
   taskList = System.GetProcessList()
   for i, v in pairs(taskList) do
-    term.setCursorPos(1, counter+1)
+    term.setCursorPos(1, counter+2)
     term.write("ID "..i.." - "..v.sName)
-    term.setCursorPos(w-1, counter+1)
+    term.setCursorPos(w-1, counter+2)
     term.write("X")
     counter = counter + 1
   end
