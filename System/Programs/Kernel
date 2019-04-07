@@ -116,7 +116,7 @@ function LoadProgram(fullPath)
   	if barEnabled == true then
   		term.redirect(MainWindow)
 	else
-		term.redirect(term.current())
+		term.redirect(term.native())
 	end
 	term.setCursorPos(1, 1)
 	loadfile(fullPath)() 
@@ -126,7 +126,7 @@ function LoadProgram(fullPath)
   	if barEnabled == true then
   		term.redirect(MainWindow)
 	else
-		term.redirect(term.current())
+		term.redirect(term.native())
 	end
 	programFunction() 
   end, fullPath)
