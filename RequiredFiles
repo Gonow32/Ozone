@@ -1,0 +1,18 @@
+{
+	"startup",
+	"APIs/System",
+	"APIs/Registry",
+	"System/Programs/Kernel",
+	"System/Programs/AddApp",
+	"System/Programs/Workspace",
+	"System/Programs/Shell",
+	"System/Programs/Tasks",
+	"System/Registry/SystemValues.reg",
+	"System/ShellTools/kill.lua",
+	"System/ShellTools/ps.lua",
+	"Workspace/Applications/Add.srt",
+	"Workspace/Applications/Restart.srt",
+	"Workspace/Applications/Shell.srt",
+	"Workspace/Applications/Shutdown.srt",
+	"Workspace/Applications/Tasks.srt"
+}
