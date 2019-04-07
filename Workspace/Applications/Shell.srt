@@ -1,0 +1,4 @@
+{
+	DisplayName = "Shell",
+	ApplicationPath = "/System/Programs/Shell"
+}

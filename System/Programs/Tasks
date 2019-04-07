@@ -1,0 +1,112 @@
+--Ozone Tasks Program - Manager for Processes
+--Written by Gonow32
+
+if not System or not Registry then
+  print("This program requires Ozone.")
+  return
+end
+
+local taskList = System.GetProcessList()
+local w, h = term.getSize()
+local barItems = {
+  [1] = {
+    fFunction = function() os.queueEvent("quit_tasks") end,
+    sText = "Quit",
+  },
+  [2] = {
+    fFunction = function()
+      term.setBackgroundColour(colours.white)
+      term.setTextColour(colours.black)
+      term.clear()
+      term.setCursorPos(2, 2)
+      term.write("Ozone Tasks")
+      term.setCursorPos(2, 3)
+      term.write(os.version())
+      if Registry.GetValue("SystemValues", "SystemDevelopmentBuild") ~= false then
+        term.write(" (Build "..tostring(Registry.GetValue("SystemValues", "SystemDevelopmentBuild"))..")")
+      end
+      term.setCursorPos(2, 5)
+      term.write("This program is part of the CubeSpace Ozone")
+      term.setCursorPos(2, 6)
+      term.write("operating system.")
+      term.setCursorPos(w - 5, h - 1)
+      term.write("Close")
+      
+      while true do
+        local e = {os.pullEvent()}
+        if e[1] == "mouse_click" then
+          if e[4] == h-1 then
+            if e[3] >= w-5 and e[3] <= w-1 then
+              return
+            end
+          end
+        end
+      end
+    end,
+    sText = "About",
+  },
+}
+
+function renderProgram()
+  term.current().setVisible(false)
+  term.setBackgroundColour(colours.lightGrey)
+  term.clear()
+  
+  term.setBackgroundColour(colours.white)
+  term.setTextColour(colours.black)
+  term.setCursorPos(1, 1)
+  term.clearLine()
+  term.setCursorPos(1, 1)
+  
+  for i, v in pairs(barItems) do
+    term.write(" "..v.sText)
+  end
+  
+  term.setBackgroundColour(colours.lightGrey)
+  term.setTextColour(colours.black)
+  local counter = 1
+  taskList = System.GetProcessList()
+  for i, v in pairs(taskList) do
+    term.setCursorPos(1, counter+1)
+    term.write("ID "..i.." - "..v.sName)
+    term.setCursorPos(w-1, counter+1)
+    term.write("X")
+    counter = counter + 1
+  end
+  
+  term.current().setVisible(true)
+end
+
+
+while true do
+  renderProgram()
+  local t = os.startTimer(0.05)
+  local e = {os.pullEvent()}
+  if e[1] == "mouse_click" then
+    if e[4] == 1 then
+      local startX = 2
+      local endX = 0
+      for i, v in pairs(barItems) do
+        if i ~= 1 then
+          startX = (startX + #barItems[i-1].sText) + 1
+        end
+        endX = startX + (#v.sText - 1)
+        
+        if e[3] >= startX and e[3] <= endX then
+          v.fFunction()
+        end
+      end
+	elseif e[3] == w - 1 then
+		local index = e[4] - 1
+		if taskList[index] then
+			System.KillProcess(index)
+		end
+    end
+  elseif e[1] == "quit_tasks" then
+    term.setBackgroundColour(colours.black)
+    term.setTextColour(colours.white)
+    term.clear()
+    term.setCursorPos(1, 1)
+    return
+  end
+end

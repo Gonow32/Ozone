@@ -1,0 +1,4 @@
+{
+  ApplicationPath = "/rom/programs/reboot.lua",
+  DisplayName = "Restart",
+}

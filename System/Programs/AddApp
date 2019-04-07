@@ -1,0 +1,94 @@
+-- Application Menu Add Program for Ozone
+-- Written by Gonow32
+
+local w, h = term.getSize()
+
+local function PrintCentered(str, y)
+	local x = (w / 2) - (#str / 2)
+	term.setCursorPos(x, y)
+	term.write(str)
+end
+
+local function DrawInterface()
+	term.setBackgroundColour(colours.lightGrey)
+	term.clear()
+	term.setCursorPos(1, 1)
+	term.setBackgroundColour(colours.white)
+	term.setTextColour(colours.lightGrey)
+	term.clearLine()
+	PrintCentered("Add a Program", 1)
+end
+
+DrawInterface()
+term.setBackgroundColour(colours.lightGrey)
+term.setTextColour(colours.black)
+term.setCursorPos(2, 3)
+term.write("Name of program: ")
+local name = read()
+
+DrawInterface()
+term.setBackgroundColour(colours.lightGrey)
+term.setTextColour(colours.black)
+term.setCursorPos(2, 3)
+term.write("Path to program: ")
+local path = read()
+
+DrawInterface()
+term.setBackgroundColour(colours.lightGrey)
+term.setTextColour(colours.black)
+term.setCursorPos(2, 3)
+term.write("Name: "..name)
+term.setCursorPos(2, 4)
+term.write("Path: "..path)
+term.setCursorPos(2, 6)
+term.write("Are you sure? (y/n)")
+
+local validInput = false
+local key
+
+repeat
+	local e = {os.pullEvent()}
+	if e[1] == "key" then
+		if e[2] == keys.y or e[2] == keys.n then
+			validInput = true
+			key = e[2]
+		end
+	end
+until validInput == true
+
+if key == keys.n then
+	return
+else
+	local newTable = {
+		DisplayName = name,
+		ApplicationPath = path,
+	}
+	local tableText = textutils.serialise(newTable)
+	local spacelessName = name:gsub(" ", "_")
+	
+	local file
+	local ok, result = pcall(function()
+		if not fs.isDir("/Workspace/Applications/") then
+			fs.makeDir("/Workspace/Applications/")
+		end
+		file = fs.open("/Workspace/Applications/"..spacelessName..".srt", "w")
+		file.writeLine(tableText)
+		file.close()
+	end)
+	if not ok then
+		pcall(file.close)
+		DrawInterface()
+		term.setBackgroundColour(colours.lightGrey)
+		term.setTextColour(colours.black)
+		term.setCursorPos(2, 3)
+		term.write("The attempt to create the menu item failed.")
+		sleep(2)
+	else
+		DrawInterface()
+		term.setBackgroundColour(colours.lightGrey)
+		term.setTextColour(colours.black)
+		term.setCursorPos(2, 3)
+		term.write("The menu item has been created.")
+		sleep(2)
+	end
+end

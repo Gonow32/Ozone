@@ -1,0 +1,140 @@
+--Ozone Registry API
+--Written for use in Ozone by Gonow32
+
+local SystemRegistry = {
+  SystemValues = {
+    SystemName = "Ozone",
+    SystemKernelVersion = 1.0,
+    SystemStringVersion = "1.0",
+    SystemSKU = "Unknown SKU"
+  },
+}
+
+local RegistryInitialised = false
+
+function InitialiseRegistry()
+  if not fs.isDir("/System/Registry") then
+    return false, "Registry does not exist"
+  end
+  
+  for i, v in pairs(fs.list("/System/Registry")) do
+    if v:sub(#v-3, #v) == ".reg" then
+      local f = fs.open("/System/Registry/"..v, "r")
+      local contents = f.readAll()
+      f.close()
+      
+      local ok, ret = pcall(textutils.unserialise, contents)
+      if ok then
+        SystemRegistry[v:sub(1, #v-4)] = ret
+      end
+    end
+  end
+  RegistryInitialised = true
+  
+  return true
+end
+
+function GetRegistryInitialised()
+  return RegistryInitialised
+end
+
+function GetValue(registry, valueName)
+  if RegistryInitialised == false then
+    return false, "Registry not initialised"
+  end
+  
+  if not SystemRegistry[registry] then
+    return false, "Registry folder does not exist"
+  end
+  
+  if not SystemRegistry[registry][valueName] then
+    return false, "Value does not exist"
+  end
+  
+  return SystemRegistry[registry][valueName]
+end
+
+function SetValue(registry, valueName, value)
+  if RegistryInitialised == false then
+    return false, "Registry not initialised"
+  end
+  
+  if not SystemRegistry[registry] then
+    return false, "Registry folder does not exist"
+  end
+  
+  if not type(value) == "string"  or type(value) == "integer" then
+    return false, "Invalid type"
+  end
+  
+  SystemRegistry[registry][valueName] = value
+  
+  local newRegistry = textutils.serialise(SystemRegistry[registry])
+  
+  local t = fs.open("/System/Registry/"..registry..".reg", "w")
+  t.write(newRegistry)
+  t.close()
+  
+  return true
+end
+
+function RegistryFolderExists(folder)
+  if RegistryInitialised == false then
+    return false, "Registry not initialised"
+  end
+  
+  if SystemRegistry[folder] then
+    return true
+  else
+    return false
+  end
+end
+
+function CreateRegistryFolder(folder)
+  if RegistryInitialised == false then
+    return false, "Registry not initialised"
+  end
+  
+  if SystemRegistry[folder] then
+    return false, "Folder exists"
+  end
+  
+  SystemRegistry[folder] = {}
+  
+  local t = fs.open("/System/Registry/"..folder..".reg")
+  t.write("{}")
+  t.close()
+  
+  return true
+end
+
+function GetAllRegistryFolders()
+  if RegistryInitialised == false then
+    return false, "Registry not initialised"
+  end
+
+  local folders = {}
+  for i, v in pairs(SystemRegistry) do
+    table.insert(folders, i)
+  end
+  
+  return folders
+end
+
+function GetAllValues(folder)
+  if RegistryInitialised == false then
+    return false, "Registry not initialised"
+  end
+  
+  if not RegistryFolderExists(folder) then
+    return false, "Folder does not exist"
+  end
+  
+  local values = {}
+  
+  for i,v in pairs(SystemRegistry[folder]) do
+    values[i] = v
+  end
+  
+  return values
+end

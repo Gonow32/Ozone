@@ -1,0 +1,8 @@
+{
+  SystemName = "Ozone",
+  SystemKernelVersion = 1.0,
+  SystemStringVersion = "1.0",
+  SystemSKU = "Home",
+  SystemDevelopmentBuild = 6,
+  SystemDevelopmentMilestone = 3,
+}

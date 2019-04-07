@@ -1,0 +1,175 @@
+--Ozone System API
+--Written for use in Ozone by Gonow32
+
+local currentRunningProgram = "CraftOS Shell"
+local processList = {}
+local KernelStarted = false
+
+function SetRunningProgram(str)
+  currentRunningProgram = str
+end
+
+function GetRunningProgram()
+  return currentRunningProgram
+end
+
+function StartProcess(func, name)
+  local id = #processList+1
+    
+  if not func or not name then
+    error("Missing arguments")
+  end
+  if processList[id] then
+    error("ID already occupied")
+  end
+  
+  processList[id] = {}
+  processList[id].cProcess = coroutine.create(func)
+  processList[id].sName = name
+  processList[id].tDeniedEvents = {}
+  processList[id].bDenyAllEvents = false
+  
+  coroutine.resume(processList[id].cProcess)
+  
+  return id
+end
+
+function KillProcess(id)
+  if not processList[id] then
+    error("Process does not exist")
+  end
+  
+  processList[id].cProcess = nil
+  processList[id] = nil
+  
+  for i = id+1, #processList do
+    processList[i-1] = {}
+    processList[i-1].sName = processList[i].sName
+    processList[i-1].cProcess = processList[i].sName
+    processList[i-1].bDenyAllEvents = processList[i].bDenyAllEvents
+    processList[i-1].tDeniedEvents = {}
+    for i2, v2 in pairs(processList[i].tDeniedEvents) do
+      processList[i-1].tDeniedEvents[i2] = v2
+    end
+    processList[i] = nil
+  end
+  
+  return true
+end
+
+-- Deprecated function
+function StopProcessID(id)
+  return KillProcess(id)
+end
+
+function DenyEventForProcess(id, eventName)
+  if not processList[id] then
+    error("Process does not exist")
+  end
+  
+  local deniedEventTable = processList[id].tDeniedEvents
+  deniedEventTable[eventName] = true
+end
+
+function AllowEventForProcess(id, eventName)
+  if not processList[id] then
+    error("Process does not exist")
+  end
+  
+  local deniedEventTable = processList[id].tDeniedEvents
+  deniedEventTable[eventName] = false
+end
+
+function ToggleDenyAllEventsForProcess(id)
+  if not processList[id] then
+    error("Process does not exist")
+  end
+  
+  processList[id].bDenyAllEvents = not processList[id].bDenyAllEvents
+end
+
+function GetProcessList()
+  local list = {}
+  for i, v in pairs(processList) do
+    list[i] = {}
+    list[i].sName = v.sName
+    list[i].bDenyAllEvents = v.bDenyAllEvents
+    list[i].tDeniedEvents = {}
+    
+    for i2, v2 in pairs(v.tDeniedEvents) do
+      list[i].tDeniedEvents[i2] = v2
+    end
+  end
+  return list
+end
+
+function HandleProcesses(barProcessID)
+  if not barProcessID then
+    barProcessID = 1
+  end
+  local ok = pcall(function()
+  while true do
+    local e = {os.pullEvent()}
+    for i, v in pairs(processList) do
+      if not v.bDenyAllEvents == true and not v.tDeniedEvents[e[1]] == true then
+        if e[1] == "mouse_click" then
+          if i ~= barProcessID then
+            e[4] = e[4] - 1
+          end
+        end
+        coroutine.resume(v.cProcess, unpack(e))
+      end
+    end
+  end end)
+  if not ok then
+	StopScreen("The thread event handler crashed.", false)
+	sleep(2)
+	KernelStarted = false
+	processList = {}
+	local ok2 = pcall(dofile, "/System/Programs/Kernel")
+	if not ok2 then
+		StopScreen("Attempt to restart kernel failed.")
+	end
+  end
+end
+
+function GetVersion()
+  return "Ozone 1.0"
+end
+
+function GetAPIVersion()
+  return 1.0
+end
+
+function StopScreen(error, shutdownFlag)
+  if not error then
+    local error = "An unexpected error occured."
+  end
+
+  for i, v in pairs(processList) do
+    v.cProcess = nil
+  end
+  
+  term.redirect(term.native())
+  
+  term.setBackgroundColour(colours.red)
+  term.clear()
+  term.setTextColour(colours.white)
+  term.setCursorPos(1, 1)
+  term.write("STOP - Ozone Critical System Error")
+  term.setCursorPos(1, 3)
+  print(error.."\n")
+  print("A critical system error has occured that could damage your computer and your system has been halted to prevent further damage to your PC. Please report this error with what you were doing prior to the crash to CubeSpace so we can fix the error.")
+  if shutdownFlag == true or shutdownFlag == nil then
+	sleep(5)
+	os.shutdown()
+  end
+end
+
+function SetKernelStarted()
+  KernelStarted = true
+end
+
+function GetKernelStarted()
+  return KernelStarted
+end

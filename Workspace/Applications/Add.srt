@@ -1,0 +1,4 @@
+{
+	DisplayName = "Add...",
+	ApplicationPath = "/System/Programs/AddApp"
+}

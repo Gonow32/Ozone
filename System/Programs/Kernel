@@ -1,0 +1,127 @@
+--Ozone System Kernel
+--Written by Gonow32
+
+local SystemBarProcessID = -1
+local MainProgramProcessID = -1
+local w, h = term.getSize()
+local SystemBarWindow = window.create(term.current(), 1, 1, w, 1)
+local MainWindow = window.create(term.current(), 1, 2, w, h-1)
+MainWindow.setCursorPos(1,1)
+
+function SystemBar()
+  term.redirect(SystemBarWindow)
+  
+  local currentColour = 1
+
+  local colourCycle = {
+    [1] = colours.red,
+    [2] = colours.orange,
+    [3] = colours.yellow,
+    [4] = colours.green,
+    [5] = colours.cyan,
+    [6] = colours.blue,
+    [7] = colours.purple,
+    [8] = colours.blue,
+    [9] = colours.cyan,
+    [10] = colours.green,
+    [11] = colours.yellow,
+    [12] = colours.orange,
+  }
+
+  local function redrawBar()
+    term.current().setVisible(false)
+	local prevX, prevY = term.getCursorPos()
+	local prevBackColour = term.getBackgroundColour()
+	local prevTextColour = term.getTextColour()
+	--SystemBarWindow.setCursorBlink(false)
+	
+    SystemBarWindow.setBackgroundColour(colours.white)
+    SystemBarWindow.setCursorPos(1,1)
+    SystemBarWindow.clearLine()
+    SystemBarWindow.setCursorPos(2, 1)
+    SystemBarWindow.setTextColour(colourCycle[currentColour])
+    SystemBarWindow.write("Ozone ")
+    SystemBarWindow.setTextColour(colours.grey)
+    SystemBarWindow.write("Open Workspace")
+	local currentFormattedTime = textutils.formatTime(os.time(), false)
+	SystemBarWindow.setCursorPos(w - (#currentFormattedTime), 1)
+	SystemBarWindow.write(currentFormattedTime)
+	
+	term.setBackgroundColour(prevBackColour)
+	term.setTextColour(prevTextColour)
+	term.setCursorPos(prevX, prevY)
+    term.current().setVisible(true)
+  end
+  
+  redrawBar()
+  while true do
+    redrawBar()
+    local timer = os.startTimer(0.2)
+    local e = {os.pullEvent()}
+    if e[1] == "timer" then
+      if e[2] == timer then
+		timer = os.startTimer(0.2)
+      end
+    elseif e[1] == "mouse_click" then
+      if e[3] >= 8 and e[3] <= 21 and e[4] == 1 then
+		term.setCursorBlink(false)
+        LoadProgram("System/Programs/Workspace")
+      end
+    end
+  end
+end
+
+if not Registry or not System then
+  printError("Ozone has been loaded incorrectly. Please reboot your system.")
+  return
+end
+
+if System.GetKernelStarted() == true then
+  print("Ozone is already running.")
+  return
+end
+
+System.SetKernelStarted()
+
+if not term.isColour() then
+  print("Ozone cannot run on legacy PCs.")
+  return
+end
+
+function LoadProgram(fullPath)
+  if not fs.exists(fullPath) or fs.isDir(fullPath) then
+    System.StopScreen("Invalid program path loaded by kernel")
+  end
+  
+  local ok, ret = pcall(loadfile, fullPath)
+  if not ok then
+    if not ret then
+      ret = "Unknown error"
+    end
+    System.StopScreen("Kernel error starting process: "..ret)
+  end
+  
+  if MainProgramProcessID ~= 1 then
+    pcall(System.KillProcess, MainProgramProcessID)
+    MainWindow.setBackgroundColour(colours.black)
+    MainWindow.setTextColour(colours.white)
+    MainWindow.clear()
+    MainWindow.setCursorPos(1, 1)
+  end
+  
+  local programFunction = function() term.redirect(MainWindow) loadfile(fullPath)() end
+  
+  MainProgramProcessID = System.StartProcess(function() term.redirect(MainWindow) programFunction() end, fullPath)
+  
+  --local programEnv = {}
+  --setmetatable(programEnv, {__index = _G})
+  --programFunction = setfenv(programFunction, programEnv)
+  --MainProgramProcessID = System.StartProcess(programFunction, fullPath)
+end
+
+SystemBarProcessID = System.StartProcess(SystemBar, "System Bar")
+--print("System bar started (ID: "..tostring(SystemBarProcessID))
+LoadProgram("System/Programs/Workspace")
+--print("Shell started (ID: "..tostring(MainProgramProcessID))
+
+System.HandleProcesses(SystemBarProcessID)

@@ -1,0 +1,4 @@
+{
+	DisplayName = "Shut Down",
+	ApplicationPath = "/rom/programs/shutdown.lua"
+}

@@ -1,0 +1,106 @@
+--Workspace for Ozone Home
+--Written by Gonow32 for use in the Ozone operating system
+
+if not System or not Registry then
+	print("This program requires Ozone.")
+	return
+end
+
+local w, h = term.getSize()
+local AppMenuOpen = false
+
+local AppMenu = {}
+if not fs.isDir("/Workspace/Applications") then
+	fs.makeDir("/Workspace/Applications")
+end
+
+local LongestNameLength = 14
+
+local function RefreshAppMenu()
+	AppMenu = {}
+	for i, v in pairs(fs.list("/Workspace/Applications")) do
+		if not fs.isDir("/Workspace/Applications/"..v) then
+			local file = fs.open("/Workspace/Applications/"..v, "r")
+			local data = file.readAll()
+			file.close()
+			local ok, returned = pcall(textutils.unserialize, data)
+			if ok then
+				if returned["DisplayName"] and returned["ApplicationPath"] then
+					if type(returned["DisplayName"]) == "string" and type(returned["ApplicationPath"]) == "string" then
+						table.insert(AppMenu, returned)
+						if #returned["DisplayName"] > LongestNameLength then LongestNameLength = #returned["DisplayName"] end
+					end
+				end
+			end
+		end
+	end
+end
+
+local function PrintCentered(str, y)
+	local x = (w / 2) - (#str / 2)
+	term.setCursorPos(x, y)
+	term.write(str)
+end
+
+function DrawTitleBar()
+	term.setCursorPos(1, 1)
+	term.setBackgroundColour(colours.white)
+	term.setTextColour(colours.lightGrey)
+	term.clearLine()
+	PrintCentered("Ozone Workspace", 1)
+end
+
+function DrawLowerBar()
+	term.setCursorPos(1, h)
+	term.setBackgroundColour(colours.white)
+	term.setTextColour(colours.grey)
+	term.clearLine()
+	if AppMenuOpen == false then
+		term.write(" ^ Applications")
+	else
+		term.write(" v Applications")
+		for i, v in pairs(AppMenu) do
+			term.setCursorPos(1, h - i)
+			term.write(string.rep(" ", LongestNameLength + 2))
+			term.setCursorPos(2, h - i)
+			term.write(v.DisplayName)
+		end
+	end
+end
+
+function DrawWorkspaceGUI()
+	term.current().setVisible(false)
+	term.setBackgroundColour(colours.lightGrey)
+	term.clear()
+	DrawTitleBar()
+	DrawLowerBar()
+	term.current().setVisible(true)
+end
+
+RefreshAppMenu()
+
+while true do
+	DrawWorkspaceGUI()
+	local e = {os.pullEvent()}
+	if e[1] == "mouse_click" then
+		if e[4] == h and e[3] >= 2 and e[3] <= 15 then
+			AppMenuOpen = not AppMenuOpen
+		elseif e[3] >= 1 and e[3] <= LongestNameLength + 2 and AppMenuOpen == true then
+			local index = h - e[4]
+			if AppMenu[index] then
+				term.setBackgroundColour(colours.black)
+				term.setTextColour(colours.white)
+				term.clear()
+				term.setCursorPos(1, 1)
+				local ok, result = pcall(dofile, AppMenu[index].ApplicationPath)
+				if not ok then
+					print(tostring(result))
+					wait(2)
+				end
+				RefreshAppMenu()
+			end
+		else
+			AppMenuOpen = false
+		end
+	end
+end

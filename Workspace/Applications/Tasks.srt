@@ -1,0 +1,4 @@
+{
+	DisplayName = "Tasks",
+	ApplicationPath = "/System/Programs/Tasks"
+}
