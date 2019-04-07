@@ -117,8 +117,6 @@ function LoadProgram(fullPath)
   local programFunction = function()
   	if barEnabled == true then
   		term.redirect(MainWindow)
-	else
-		term.redirect(term.native())
 	end
 	term.setCursorPos(1, 1)
 	loadfile(fullPath)() 
@@ -127,8 +125,6 @@ function LoadProgram(fullPath)
   MainProgramProcessID = System.StartProcess(function() 
   	if barEnabled == true then
   		term.redirect(MainWindow)
-	else
-		term.redirect(term.native())
 	end
 	programFunction() 
   end, fullPath)
