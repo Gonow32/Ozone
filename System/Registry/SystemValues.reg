@@ -3,7 +3,7 @@
   SystemKernelVersion = 1.0,
   SystemStringVersion = "1.0",
   SystemSKU = "Home",
-  SystemDevelopmentBuild = 11,
+  SystemDevelopmentBuild = 12,
   SystemDevelopmentMilestone = 3,
   StartInShell = false,
   SystemBarEnabled = true,
