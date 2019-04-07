@@ -8,6 +8,9 @@ local SystemBarWindow = window.create(term.current(), 1, 1, w, 1)
 local MainWindow = window.create(term.current(), 1, 2, w, h-1)
 MainWindow.setCursorPos(1,1)
 
+local shellMode = Registry.GetValue("SystemValues", "StartInShell")
+local barEnabled = Registry.GetValue("SystemValues", "SystemBarEnabled")
+
 function SystemBar()
   term.redirect(SystemBarWindow)
   
@@ -109,7 +112,14 @@ function LoadProgram(fullPath)
     MainWindow.setCursorPos(1, 1)
   end
   
-  local programFunction = function() term.redirect(MainWindow) loadfile(fullPath)() end
+  local programFunction = function()
+  	if shellMode == false then
+  		term.redirect(MainWindow)
+	else
+		term.redirect(term.native())
+	end
+	loadfile(fullPath)() 
+  end
   
   MainProgramProcessID = System.StartProcess(function() term.redirect(MainWindow) programFunction() end, fullPath)
   
@@ -119,8 +129,7 @@ function LoadProgram(fullPath)
   --MainProgramProcessID = System.StartProcess(programFunction, fullPath)
 end
 
-local shellMode = Registry.GetValue("SystemValues", "StartInShell")
-local barEnabled = Registry.GetValue("SystemValues", "SystemBarEnabled")
+
 
 if barEnabled then
 	SystemBarProcessID = System.StartProcess(SystemBar, "System Bar")
