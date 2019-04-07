@@ -1,7 +1,7 @@
 {
 	"startup",
 	"APIs/System",
-	"APIs/Registry",
+  "APIs/Registry",
   "System/Programs/Kernel",
 	"System/Programs/AddApp",
 	"System/Programs/Workspace",
