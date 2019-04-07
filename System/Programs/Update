@@ -1,0 +1,142 @@
+-- Ozone System Updater
+-- Written by Gonow32
+
+local BaseURL = "https://raw.githubusercontent.com/Gonow32/Ozone/master/"
+local w, h = term.getSize()
+
+local function PrintCentered(str, y)
+	local x = (w / 2) - (#str / 2)
+	term.setCursorPos(x, y)
+	term.write(str)
+end
+
+local function RenderMain()
+	term.current().setVisible(false)
+	term.setBackgroundColour(colours.lightGrey)
+	term.clear()
+	term.setCursorPos(1, 1)
+	term.setBackgroundColour(colours.white)
+	term.setTextColour(colours.lightGrey)
+	term.clearLine()
+	PrintCentered("Ozone System Updater", 1)
+	term.current().setVisible(true)
+	
+	term.setBackgroundColour(colours.lightGrey)
+	term.setTextColour(colours.black)
+end
+
+local handle = http.get(BaseURL.."CurrentVersionInfo")
+local currentVersionText
+if handle then
+	currentVersionText = handle.readAll()
+	handle.close()
+end
+
+local ok, tCurrentVersion = pcall(textutils.unserialise, currentVersionText)
+if not ok then
+	RenderMain()
+	term.setCursorPos(2, 3)
+	term.write("Error fetching current version information.")
+	sleep(2)
+	term.setBackgroundColour(colours.black)
+	term.setTextColour(colours.white)
+	term.clear()
+	term.setCursorPos(1, 1)
+	return
+end
+
+local running = true
+
+while running do
+	RenderMain()
+	term.setCursorPos(2, 3)
+	if tCurrentVersion.DevelopmentBuild == true then
+		term.write("You are currently running Ozone "..Registry.GetValue("SystemValues", "SystemStringVersion").." Build "..tostring(Registry.GetValue("SystemValues", "SystemDevelopmentBuild"))..".")
+		term.setCursorPos(2, 4)
+		term.write("Would you like to update to Ozone "..tCurrentVersion.StringVersion.." Build "..tostring(tCurrentVersion.BuildNumber).."?")
+	else
+		term.write("You are currently running Ozone "..Registry.GetValue("SystemValues", "SystemStringVersion")..".")
+		term.setCursorPos(2, 4)
+		term.write("Would you like to update to Ozone "..tCurrentVersion.StringVersion.."?")
+	end
+	
+	term.setCursorPos(2, h-1)
+	term.write("Yes")
+	term.setCursorPos(w - 1, h - 1)
+	term.write("No")
+	
+	local e = {os.pullEvent()}
+	if e[1] == "mouse_click" then
+		if e[3] >= 2 and e[3] <= 4 and e[4] == h - 1 then
+			running = false
+		elseif e[3] >= w - 1 and e[3] <= w and e[4] == h - 1 then
+			term.setBackgroundColour(colours.black)
+			term.setTextColour(colours.white)
+			term.clear()
+			term.setCursorPos(1, 1)
+			return
+		end
+	end
+end
+
+local handle = http.get(BaseURL.."RequiredFiles")
+local fileTableText
+if handle then
+	fileTableText = handle.readAll()
+	handle.close()
+else
+	fileTableText = "{}"
+end
+
+local ok, fileTable = pcall(textutils.unserialise, fileTableText)
+if not ok then
+	RenderMain()
+	term.setCursorPos(2, 3)
+	term.write("Error fetching required file information.")
+	sleep(2)
+	term.setBackgroundColour(colours.black)
+	term.setTextColour(colours.white)
+	term.clear()
+	term.setCursorPos(1, 1)
+	return
+end
+
+local errors = false
+
+for i, v in pairs(fileTable) do
+	RenderMain()
+	term.setCursorPos(2, 3)
+	term.write("Downloading "..v.." ("..tostring(i).."/"..tostring(#fileTable))
+	local handle = http.get(BaseURL..v)
+	if handle then
+		local data = handle.readAll()
+		handle.close()
+		local file = fs.open("/"..v, "w")
+		if file then
+			file.writeLine(data)
+			file.close()
+		else
+			RenderMain()
+			term.setCursorPos(2, 3)
+			term.write("Error writing file: "..v)
+			errors = true
+			sleep(1)
+		end
+	else
+		RenderMain()
+		term.setCursorPos(2, 3)
+		term.write("Error downloading file: "..v)
+		errors = true
+		sleep(1)
+	end
+end
+
+RenderMain()
+term.setCursorPos(2, 3)
+if errors == true then
+	term.write("The update completed with errors.")
+else
+	term.write("The update completed successfully.")
+end
+sleep(2)
+
