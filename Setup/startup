@@ -1,0 +1,199 @@
+--Ozone Setup Startup
+--Written by Gonow32
+
+if not term.isColour() then
+  print("Ozone Setup could not be started.")
+  print("Ozone cannot be installed on legacy PCs.")
+  return
+end
+
+local currentScreen = 1
+local w, h = term.getSize()
+local SKU = "Professional"
+
+local oldPullEvent = os.pullEvent
+os.pullEvent = os.pullEventRaw
+
+local setupScreens = {}
+
+function NextScreen()
+  if currentScreen + 1 <= #setupScreens then
+    currentScreen = currentScreen + 1
+  end
+  sleep()
+end
+
+setupScreens = {
+  [1] = {
+    KeyPresses = {
+      ["ENTER"] = {
+        keyCode = keys.enter,
+        fFunction = function() NextScreen() end,
+        description = "Next",
+      },
+      ["Q"] = {
+        keyCode = keys.q,
+        fFunction = function() os.queueEvent("quit_setup") end,
+        description = "Quit",
+      },
+    },
+    ScreenText = "Welcome to Ozone Setup!\n\nThis setup wizard will guide you through the installation of the Ozone operating system. If you do not wish to install Ozone at this time, press Q to quit Ozone Setup."
+  },
+  [2] = {
+    KeyPresses = {
+      ["ENTER"] = {
+        keyCode = keys.enter,
+        fFunction = function() NextScreen() end,
+        description = "Accept",
+      },
+      ["Q"] = {
+        keyCode = keys.q,
+        fFunction = function() os.queueEvent("quit_setup") end,
+        description = "Quit",
+      },
+    },
+    ScreenText = "This is a development build of CubeSpace Codename Ozone.\nBy accepting this, you are agreeing to not release any media or information without permission from CubeSpace regarding this development build of CubeSpace Codename Ozone.",
+  },
+  [3] = {
+    KeyPresses = {
+      ["ENTER"] = {
+        keyCode = keys.enter,
+        fFunction = NextScreen,
+        description = "Professional",
+      },
+      ["Q"] = {
+        keyCode = keys.q,
+        fFunction = function() os.queueEvent("quit_setup") end,
+        description = "Quit",
+      },
+    },
+    ScreenText = "You must now select the version of Ozone you wish to install.\n\n ENTER - Professional",
+  },
+  [4] = {
+    KeyPresses = {
+      ["ENTER"] = {
+        keyCode = keys.enter,
+        fFunction = function()
+          term.setBackgroundColour(colours.blue)
+          term.setTextColour(colours.white)
+          term.clear()
+          term.setCursorPos(2, 2)
+          print("Ozone Setup")
+          term.setCursorPos(2, 3)
+          print("-------------")
+          term.setCursorPos(2, 5)
+          print("Setup is copying files.")
+          term.setBackgroundColour(colours.lightGrey)
+          term.setTextColour(colours.black)
+          term.setCursorPos(1, h)
+          term.clearLine()
+          term.write(" Copying: ")
+          
+          local setupDirectory = "/"
+          local runningProgram = shell.getRunningProgram()
+          local lastSlash = -1
+          
+          for i = 1, #runningProgram do
+            if runningProgram:sub(i, i) == "/" then
+              lastSlash = i
+            end
+          end
+          
+          if lastSlash ~= -1 and lastSlash ~= 1 then
+            setupDirectory = runningProgram:sub(1, lastSlash-1)
+          end
+          
+          local systemFileDirectory = setupDirectory.."/SystemFiles/"..SKU.."/"
+                                
+          local function copyDirectory(dir)
+            for i, v in pairs(fs.list(dir)) do
+              if fs.isDir(dir..v) then
+                copyDirectory(dir..v.."/")
+              else
+                local pathOnSystem = dir:sub(#systemFileDirectory+1, #dir)..v
+                if fs.exists(pathOnSystem) and not fs.isReadOnly(pathOnSystem) then
+                  fs.delete(pathOnSystem)
+                end
+                if not fs.isReadOnly(pathOnSystem) then
+                  if not fs.isDir(dir) then
+                    fs.makeDir(pathOnSystem:sub(1, #pathOnSystem-#v))
+                  end
+                  fs.copy(dir..v, pathOnSystem)
+                  term.setCursorPos(1, h)
+                  term.clearLine()
+                  term.setCursorPos(2, h)
+                  term.write("Copying: "..dir..v)
+                  sleep(0.1)
+                end
+              end
+            end
+          end
+          
+          copyDirectory(systemFileDirectory)
+          
+          NextScreen()
+        end,
+        description = "Install",
+      },
+    },
+    ScreenText = "Ozone Setup will now copy the required files for installation.\n\nPress ENTER to begin.",
+  },
+  [5] = {
+    KeyPresses = {
+      ["ENTER"] = {
+        keyCode = keys.enter,
+        fFunction = os.reboot,
+        description = "Reboot",
+      },
+    },
+    ScreenText = "To finalize installation, Ozone Setup needs to reboot. Press ENTER when you are ready to reboot and you have removed all disks from all drives."
+  },
+}
+
+function RenderCurrentScreen()
+  term.setBackgroundColour(colours.blue)
+  term.setTextColour(colours.white)
+  term.clear()
+  term.setCursorPos(2, 2)
+  print("Ozone Setup")
+  term.setCursorPos(2, 3)
+  print("-------------")
+  term.setCursorPos(1, 5)
+  if setupScreens[currentScreen] then
+    if setupScreens[currentScreen].ScreenText then
+      print(setupScreens[currentScreen].ScreenText)
+    end
+  end
+  term.setCursorPos(1, h)
+  term.setBackgroundColour(colours.lightGrey)
+  term.clearLine()
+  term.setTextColour(colours.black)
+  term.setCursorPos(1, h)
+  if setupScreens[currentScreen] then
+    if setupScreens[currentScreen].KeyPresses then
+      for i, v in pairs(setupScreens[currentScreen].KeyPresses) do
+        term.write(i.." - "..v.description.." ")
+      end
+    end
+  end
+end
+
+while true do
+  RenderCurrentScreen()
+  local e = {os.pullEvent()}
+  if e[1] == "quit_setup" then
+    term.setBackgroundColour(colours.black)
+    term.setTextColour(colours.white)
+    term.clear()
+    term.setCursorPos(1, 1)
+    return
+  elseif e[1] == "key" then
+    if setupScreens[currentScreen] then
+      for i, v in pairs(setupScreens[currentScreen].KeyPresses) do
+        if v.keyCode == e[2] then
+          v.fFunction()
+        end
+      end
+    end
+  end
+end

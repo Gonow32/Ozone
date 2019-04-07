@@ -1,0 +1,71 @@
+--Ozone Startup Loader
+--Written by Gonow32
+
+local expectedFiles = {
+  "APIs/System",
+  "APIs/Registry",
+  "System/Programs/Kernel",
+  "System/Programs/Shell",
+}
+
+local function fileError(path)
+  printError("Ozone Critical System Error")
+  printError("The Ozone Kernel could not load because the following file/folder is missing/corrupted:\n")
+  print(path.."\n")
+  printError("Please replace this file.")
+end
+
+--term.clear()
+--term.setCursorPos(1, 1)
+--print("Starting Ozone...")
+
+for i, v in pairs(expectedFiles) do
+  if not fs.exists(v) then
+    fileError(v)
+    return
+  end
+end
+
+if System or Registry then
+  print("Ozone is already running.")
+  return
+end
+
+if not fs.isDir("APIs") then
+  fileError("/APIs")
+  return
+end
+
+for i2, v2 in pairs(fs.list("/APIs")) do
+  os.loadAPI("/APIs/"..v2)
+end
+
+if not System or not Registry then
+  printError("Ozone Critical System Error")
+  printError("Unknown critical API error")
+  return
+end
+
+if System.GetKernelStarted() == true then
+  print("Ozone is already running.")
+  return
+end
+
+Registry.InitialiseRegistry()
+
+local oldversion = os.version
+
+function os.version()
+  if Registry.GetValue then
+    if Registry.GetValue("SystemValues", "SystemStringVersion") ~= false and Registry.GetValue("SystemValues", "SystemSKU") ~= false then
+      return "Ozone "..Registry.GetValue("SystemValues", "SystemStringVersion").." "..Registry.GetValue("SystemValues", "SystemSKU")
+    else
+      return oldversion()
+    end
+  else
+    return oldversion()
+  end
+end
+
+term.redirect(term.native())
+loadfile("System/Programs/Kernel")()

@@ -1,0 +1,8 @@
+{
+  SystemName = "Ozone",
+  SystemKernelVersion = 1.0,
+  SystemStringVersion = "1.0",
+  SystemSKU = "Preinstallation Environment",
+  SystemDevelopmentBuild = 1,
+  SystemDevelopmentMilestone = 1,
+}
