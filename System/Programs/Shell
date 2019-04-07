@@ -1,18 +1,4 @@
 --Program to launch the CraftOS Shell
 --Run in Ozone as the default program
 
-settings.set("shell.allow_startup", false)
-local oldShutdown = os.shutdown
-function os.shutdown()
-	settings.set("shell.allow_startup", true)
-	oldShutdown()
-end
-
-local oldReboot = os.reboot
-function os.reboot()
-	settings.set("shell.allow_startup", true)
-	oldReboot()
-end
-
 dofile("/rom/programs/shell.lua")
-settings.set("shell.allow_startup", true)
