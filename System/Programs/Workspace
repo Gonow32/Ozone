@@ -98,6 +98,8 @@ while true do
 					wait(2)
 				end
 				RefreshAppMenu()
+			else
+				AppMenuOpen = false
 			end
 		else
 			AppMenuOpen = false
