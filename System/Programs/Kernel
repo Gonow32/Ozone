@@ -7,6 +7,8 @@ local w, h = term.getSize()
 local SystemBarWindow = window.create(term.current(), 1, 1, w, 1)
 local MainWindow = window.create(term.current(), 1, 2, w, h-1)
 MainWindow.setCursorPos(1,1)
+local NativeWindow = window.create(term.current(), 1, 1, w, h)
+term.redirect(NativeWindow)
 
 local shellMode = Registry.GetValue("SystemValues", "StartInShell")
 local barEnabled = Registry.GetValue("SystemValues", "SystemBarEnabled")
