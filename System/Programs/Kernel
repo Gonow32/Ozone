@@ -119,9 +119,18 @@ function LoadProgram(fullPath)
   --MainProgramProcessID = System.StartProcess(programFunction, fullPath)
 end
 
-SystemBarProcessID = System.StartProcess(SystemBar, "System Bar")
+local shellMode = Registry.GetValue("SystemValues", "StartInShell")
+local barEnabled = Registry.GetValue("SystemValues", "SystemBarEnabled")
+
+if barEnabled then
+	SystemBarProcessID = System.StartProcess(SystemBar, "System Bar")
+end
 --print("System bar started (ID: "..tostring(SystemBarProcessID))
-LoadProgram("System/Programs/Workspace")
+if shellMode then
+	LoadProgram("System/Programs/Shell")
+else
+	LoadProgram("System/Programs/Workspace")
+end
 --print("Shell started (ID: "..tostring(MainProgramProcessID))
 
 System.HandleProcesses(SystemBarProcessID)
