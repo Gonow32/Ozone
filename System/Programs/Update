@@ -1,6 +1,11 @@
 -- Ozone System Updater
 -- Written by Gonow32
 
+if not System or not Registry then
+	print("This program requires Ozone.")
+	return
+end
+
 local BaseURL = "https://raw.githubusercontent.com/Gonow32/Ozone/master/"
 local w, h = term.getSize()
 
