@@ -16,6 +16,18 @@ local function fileError(path)
   printError("Please replace this file.")
 end
 
+if not fs.isDir("/System/ShellTools") then
+  fs.makeDir("/System/ShellTools")
+end
+
+shell.setPath(shell.path()..":/System/ShellTools")
+
+if System or Registry then
+  term.setTextColour(colours.yellow)
+  print("Type 'exit' to return to Workspace.")
+  return
+end
+
 term.clear()
 term.setCursorPos(1, 1)
 term.setTextColour(colours.yellow)
@@ -27,11 +39,6 @@ for i, v in pairs(expectedFiles) do
     fileError(v)
     return
   end
-end
-
-if System or Registry then
-  print("Ozone is already running.")
-  return
 end
 
 if not fs.isDir("APIs") then
