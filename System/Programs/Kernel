@@ -1,6 +1,11 @@
 --Ozone System Kernel
 --Written by Gonow32
 
+if not System or not Registry then
+	print("This program requires Ozone.")
+	return
+end
+
 local SystemBarProcessID = -1
 local MainProgramProcessID = -1
 local w, h = term.getSize()
