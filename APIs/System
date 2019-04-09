@@ -28,6 +28,8 @@ function StartProcess(func, name)
   processList[id].sName = name
   processList[id].tDeniedEvents = {}
   processList[id].bDenyAllEvents = false
+  processList[id].nEpochAtResume = os.epoch("utc")
+  processList[id].nProcessTime = 0
   
   coroutine.resume(processList[id].cProcess)
   
@@ -48,6 +50,8 @@ function KillProcess(id)
     processList[i-1].cProcess = processList[i].sName
     processList[i-1].bDenyAllEvents = processList[i].bDenyAllEvents
     processList[i-1].tDeniedEvents = {}
+    processList[i-1].nEpochAtResume = processList[i].nEpochAtResume
+    processList[i-1].nProcessTime = processList[i].nProcessTime
     for i2, v2 in pairs(processList[i].tDeniedEvents) do
       processList[i-1].tDeniedEvents[i2] = v2
     end
@@ -95,6 +99,7 @@ function GetProcessList()
     list[i].sName = v.sName
     list[i].bDenyAllEvents = v.bDenyAllEvents
     list[i].tDeniedEvents = {}
+    list[i].nProcessTime = v.nProcessTime
     
     for i2, v2 in pairs(v.tDeniedEvents) do
       list[i].tDeniedEvents[i2] = v2
@@ -114,24 +119,28 @@ function HandleProcesses(barProcessID)
       if not v.bDenyAllEvents == true and not v.tDeniedEvents[e[1]] == true then
         if e[1] == "mouse_click" then
           if i ~= barProcessID then
-	    if Registry.GetValue("SystemValues", "SystemBarEnabled") == true then
+	          if Registry.GetValue("SystemValues", "SystemBarEnabled") == true then
               e[4] = e[4] - 1
-	    end
+	          end
           end
         end
+	      if coroutine.status(v.cProcess) == "suspended" then
+	        v.nProcessTime = os.epoch("utc") - v.nEpochAtResume
+          v.nEpochAtResume = os.epoch("utc")
+	      end
         coroutine.resume(v.cProcess, unpack(e))
       end
     end
   end end)
   if not ok then
-	StopScreen("The thread event handler crashed.", false)
-	sleep(2)
-	KernelStarted = false
-	processList = {}
-	local ok2 = pcall(dofile, "/System/Programs/Kernel")
-	if not ok2 then
-		StopScreen("Attempt to restart kernel failed.")
-	end
+	  StopScreen("The thread event handler crashed.", false)
+	  sleep(2)
+	  KernelStarted = false
+	  processList = {}
+	  local ok2 = pcall(dofile, "/System/Programs/Kernel")
+	  if not ok2 then
+		  StopScreen("Attempt to restart kernel failed.")
+	  end
   end
 end
 
