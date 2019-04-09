@@ -9,5 +9,5 @@ end
 local taskList = System.GetProcessList()
 
 for i, v in pairs(taskList) do
-	print("ID "..tostring(i).." - "..v.sName.." - "..tostring(v.nProcessTime))
+	print("ID "..tostring(i).." - "..v.sName.." - "..tostring(v.nProcessTime).."ms")
 end
