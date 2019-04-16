@@ -30,6 +30,8 @@ local function RenderMain()
 	term.setTextColour(colours.black)
 end
 
+RenderMain()
+
 local handle = http.get(BaseURL.."CurrentVersionInfo")
 local currentVersionText
 if handle then
