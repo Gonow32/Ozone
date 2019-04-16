@@ -1,4 +1,4 @@
---Workspace for Ozone Home
+--Workspace for Ozone
 --Written by Gonow32 for use in the Ozone operating system
 
 if not System or not Registry then
