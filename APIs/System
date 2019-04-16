@@ -125,11 +125,11 @@ function HandleProcesses(barProcessID)
 	        end
           end
         end
-	    if coroutine.status(v.cProcess) == "suspended" then
-	        v.nProcessTime = os.epoch("utc") - v.nEpochAtResume
-            v.nEpochAtResume = os.epoch("utc")
-	    end
 		if v.cProcess then
+	    	if coroutine.status(v.cProcess) == "suspended" then
+	        	v.nProcessTime = os.epoch("utc") - v.nEpochAtResume
+            	v.nEpochAtResume = os.epoch("utc")
+	    	end
 			coroutine.resume(v.cProcess, unpack(e))
 		else
 			table.insert(processesToKill, i)
