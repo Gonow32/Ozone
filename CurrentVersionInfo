@@ -1,6 +1,6 @@
 {
 	DevelopmentBuild = true,
-	BuildNumber = 15,
+	BuildNumber = 16,
 	Version = 1,
 	StringVersion = "1.0"
 }
