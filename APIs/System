@@ -115,22 +115,30 @@ function HandleProcesses(barProcessID)
   local ok = pcall(function()
   while true do
     local e = {os.pullEvent()}
+	local processesToKill = {}
     for i, v in pairs(processList) do
       if not v.bDenyAllEvents == true and not v.tDeniedEvents[e[1]] == true then
         if e[1] == "mouse_click" then
           if i ~= barProcessID then
-	          if Registry.GetValue("SystemValues", "SystemBarEnabled") == true then
+	  		if Registry.GetValue("SystemValues", "SystemBarEnabled") == true then
               e[4] = e[4] - 1
-	          end
+	        end
           end
         end
-	      if coroutine.status(v.cProcess) == "suspended" then
+	    if coroutine.status(v.cProcess) == "suspended" then
 	        v.nProcessTime = os.epoch("utc") - v.nEpochAtResume
-          v.nEpochAtResume = os.epoch("utc")
-	      end
-        coroutine.resume(v.cProcess, unpack(e))
+            v.nEpochAtResume = os.epoch("utc")
+	    end
+		if v.cProcess then
+			coroutine.resume(v.cProcess, unpack(e))
+		else
+			table.insert(processesToKill, i)
+		end
       end
     end
+	for i2, v2 in pairs(processesToKill) do
+		processList[v2] = nil
+	end
   end end)
   if not ok then
 	  StopScreen("The thread event handler crashed.", false)
