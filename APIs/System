@@ -112,7 +112,7 @@ function HandleProcesses(barProcessID)
   if not barProcessID then
     barProcessID = 1
   end
-  local ok = pcall(function()
+  local ok, ret = pcall(function()
   while true do
     local e = {os.pullEvent()}
 	local processesToKill = {}
@@ -141,6 +141,9 @@ function HandleProcesses(barProcessID)
 	end
   end end)
   if not ok then
+      if ret == "Terminated" then
+	  	  return
+	  end
 	  StopScreen("The thread event handler crashed.", false)
 	  sleep(2)
 	  KernelStarted = false
